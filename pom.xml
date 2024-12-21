@@ -11,6 +11,8 @@
         <exec.mainClass>com.jettraserver.JettraServer</exec.mainClass>
         <jersey.version>3.1.9</jersey.version>
         <microprofile-config-api.version>3.1</microprofile-config-api.version>
+        <microprofile-health-api.version>4.0</microprofile-health-api.version>
+        <microprofile-openapi-api.version>4.0</microprofile-openapi-api.version>
         <!--<jersey.version>3.1.0</jersey.version>-->
         <!--             <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>-->
@@ -69,6 +71,22 @@
             <artifactId>jaxb-runtime</artifactId>
             <version>4.0.5</version>
         </dependency>
+<!--        <dependency>
+            <groupId>org.eclipse.microprofile.health</groupId>
+            <artifactId>microprofile-health-api</artifactId>
+            <version>${microprofile-health-api.version}</version>
+        </dependency>-->
+
+<!--        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>${microprofile-openapi-api.version}</version>
+        </dependency>-->
+        <!--        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>-->
     </dependencies>
     <build>
         <finalName>jettraserver</finalName>

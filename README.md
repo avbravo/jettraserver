@@ -35,6 +35,31 @@ public class Main {
 
 ```
 
+---
+
+## Con HTTPS/TLSv1.2
+
+```java
+  JettraServer persona = new JettraServer.Builder()
+                .protocol("HTTPS")
+                .host("localhost")
+                .port(8080)
+                .tls("TLSv1.2")
+                .application(
+                        new JakartaRestConfiguration() {
+                    @Override
+                    public Set<Class<?>> getClasses() {
+                        Set<Class<?>> classes = new HashSet<>();
+                        classes.add(EmployeeController.class);
+                        classes.add(HelloController.class);
+                        return classes;
+                    }
+                }
+                )
+                .start();
+
+```
+
 
 
 ```shell

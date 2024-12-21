@@ -4,16 +4,20 @@
  */
 package com.jettraserver;
 
+import com.jettraserver.utils.JettraLogo;
+import com.jettraserver.utils.JettraMessage;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.SeBootstrap;
+import jakarta.ws.rs.SeBootstrap.Configuration.SSLClientAuthentication;
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.UriBuilder;
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import javax.net.ssl.SSLContext;
 
 /**
  *
@@ -22,19 +26,27 @@ import java.util.concurrent.ExecutionException;
 public class JettraServer {
 
     private String protocol;
+
+    @NotNull(message = "EL rootPath no debe estar vacio")
+    private String rootPath;
+    private String tls;
     private String host;
     private Integer port;
+    private Boolean logo;
+
     private jakarta.ws.rs.core.Application application;
 
     public JettraServer() {
     }
 
-    public JettraServer(String protocol, String host, Integer port, jakarta.ws.rs.core.Application application) {
+    public JettraServer(String protocol, String rootPath, String tls, String host, Integer port, Boolean logo, Application application) {
         this.protocol = protocol;
+        this.rootPath = rootPath;
+        this.tls = tls;
         this.host = host;
         this.port = port;
+        this.logo = logo;
         this.application = application;
-
     }
 
     public jakarta.ws.rs.core.Application getApplication() {
@@ -72,12 +84,30 @@ public class JettraServer {
     public static class Builder {
 
         private String protocol;
+        private String rootPath;
+        private String tls;
         private String host;
         private Integer port;
+        private Boolean logo;
         private jakarta.ws.rs.core.Application application;
 
         public Builder protocol(String protocol) {
             this.protocol = protocol;
+            return this;
+        }
+
+        public Builder logo(Boolean logo) {
+            this.logo = logo;
+            return this;
+        }
+
+        public Builder rootPath(String rootPath) {
+            this.rootPath = rootPath;
+            return this;
+        }
+
+        public Builder tls(String tls) {
+            this.tls = tls;
             return this;
         }
 
@@ -99,6 +129,23 @@ public class JettraServer {
         public JettraServer start() {
             try {
 
+                if (rootPath == null) {
+                    System.out.println("please enter rootPath");
+                    return new JettraServer();
+                }
+                protocol = protocol.toUpperCase();
+                if (tls == null) {
+                    tls = "";
+                }
+                if (protocol.equals("HTTP") && (!tls.equals(""))) {
+                    System.out.println("tls is only used with HTTPS. ");
+                    return new JettraServer();
+                }
+
+                long start = System.currentTimeMillis();
+
+                System.out.println("");
+
                 System.out.println(
                         "___________________________________________________________________________");
                 System.out.println(
@@ -106,34 +153,66 @@ public class JettraServer {
 
                 SeBootstrap.Configuration.Builder configBuilder = SeBootstrap.Configuration.builder();
 
-                configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol)
-                        .property(SeBootstrap.Configuration.HOST, host)
-                        .property(SeBootstrap.Configuration.PORT, port);
-
-                System.out.println(
-                        "....Payara Start....");
+                if (protocol.equals("HTTP")) {
+                    configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol);
+                } else {
+                    if (tls == "" || tls == null || tls.isEmpty()) {
+                        configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol).sslClientAuthentication(SSLClientAuthentication.MANDATORY);
+                    } else {
+                        SSLContext tlsContext = SSLContext.getInstance(tls);
+                        configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol).sslClientAuthentication(SSLClientAuthentication.MANDATORY).sslContext(tlsContext);
+                    }
+                }
+                if (!rootPath.equals("")) {
+                    configBuilder.property(SeBootstrap.Configuration.ROOT_PATH, rootPath);
+                }
+                configBuilder.property(SeBootstrap.Configuration.HOST, host);
+                configBuilder.property(SeBootstrap.Configuration.PORT, port);
 
                 SeBootstrap.Instance instance = SeBootstrap.start(application, configBuilder.build()).toCompletableFuture().get();
+                instance.stopOnShutdown(stopResult
+                        -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
+                                stopResult.unwrap(Object.class)));
 
+                long finish = System.currentTimeMillis();
+                long timeElapsed = finish - start;
+                if (logo) {
+                    JettraLogo.blurVision();
+                }
+
+                System.out.println("Server started in: " + timeElapsed + "ms");
+                System.out.println("\n\n");
                 UriBuilder uriBuilder = instance.configuration().baseUriBuilder();
                 var httpClient = HttpClient.newBuilder().build();
                 var httpRequest = HttpRequest.newBuilder()
                         .uri(uriBuilder
-                                .path("helloworld").build())
+                                .path("jettrahello").build())
                         .header("Content-Type", "application/json")
                         .GET().build();
 
                 HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
                 var body = response.body();
 
+                System.out.printf("\tInstance: %s  \n\t[Native handle: %s].%n \n\tTest connection to: %s", instance, instance.unwrap(Object.class), uriBuilder);
+                //System.out.printf("\tInstance: %s \n\trunning at: %s \n\t[Native handle: %s].%n", instance, uriBuilder,instance.unwrap(Object.class));
+               
+                if (body == null || body.equals("")) {
+                    JettraMessage.failedTest();
+                }else{
+                     System.out.println("\n\tResult: " + body);
+                }
+                System.out.println("");
             } catch (Exception e) {
+                System.out.println("start() " + e.getLocalizedMessage());
             }
-//            catch (InterruptedException i) {
-//            } catch (ExecutionException e) {
-//            } catch (IOException io) {
-//            }
 
-            return new JettraServer(protocol, host, port, application);
+            return new JettraServer(protocol, rootPath, tls, host, port, logo, application);
         }
     }
+
+    public static Validator getValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        return factory.getValidator();
+    }
+
 }
