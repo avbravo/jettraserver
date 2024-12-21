@@ -19,12 +19,12 @@
     </properties>
     <dependencies>
         
-        <dependency>
+<!--        <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
             <version>${microprofile-config-api.version}</version>
             
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-core-api</artifactId>
