@@ -64,10 +64,38 @@ public class Main {
 
 ```shell
 
-mvn clean package -Pexec
+mvn clean package -Pexec  -Dmaven.test.skip=true  
 
 java -jar target/jettraserver.jar
 
 
 
 ```
+## Docker
+
+
+ <plugins>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.5</version>
+                <configuration>
+                    <imageName>springdocker</imageName>
+                    <baseImage>java</baseImage>
+                    <entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin>
+          
+        </plugins>
+
+
+$ mvn clean package docker:build
+$ docker images
+$ docker run -p 8080:8080 -t <image name>
