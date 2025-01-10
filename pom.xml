@@ -90,6 +90,14 @@
             <artifactId>jaxb-runtime</artifactId>
             <version>4.0.5</version>
         </dependency>
+        
+          <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>${microprofile-config-api.version}</version>
+        </dependency>
+        
+        
         <!--        <dependency>
             <groupId>org.eclipse.microprofile.health</groupId>
             <artifactId>microprofile-health-api</artifactId>
