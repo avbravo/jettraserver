@@ -152,7 +152,6 @@ public class JettraServer {
                         "                         JettraServer starting....");
 
                 SeBootstrap.Configuration.Builder configBuilder = SeBootstrap.Configuration.builder();
-                System.out.println("paso 1");
                 if (protocol.equals("HTTP")) {
                     configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol);
                 } else {
@@ -163,14 +162,13 @@ public class JettraServer {
                         configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol).sslClientAuthentication(SSLClientAuthentication.MANDATORY).sslContext(tlsContext);
                     }
                 }
-                System.out.println("paso 2");
+
                 if (!rootPath.equals("")) {
                     configBuilder.property(SeBootstrap.Configuration.ROOT_PATH, rootPath);
                 }
                 configBuilder.property(SeBootstrap.Configuration.HOST, host);
                 configBuilder.property(SeBootstrap.Configuration.PORT, port);
 
-                System.out.println("paso 3");
                 System.out.println("..........................................................");
                 System.out.println("application " + application.toString());
                 System.out.println("host " + host);
@@ -178,19 +176,17 @@ public class JettraServer {
                 System.out.println("rootPath " + rootPath);
                 System.out.println("..........................................................");
                 SeBootstrap.Instance instance = SeBootstrap.start(application, configBuilder.build()).toCompletableFuture().get();
-                System.out.println("paso 3.1");
+
                 instance.stopOnShutdown(stopResult
                         -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
                                 stopResult.unwrap(Object.class)));
 
-                System.out.println("paso 4");
                 long finish = System.currentTimeMillis();
                 long timeElapsed = finish - start;
                 if (logo) {
                     JettraLogo.blurVision();
                 }
 
-                System.out.println("paso 5");
                 System.out.println("Server started in: " + timeElapsed + "ms");
                 System.out.println("\n\n");
                 UriBuilder uriBuilder = instance.configuration().baseUriBuilder();
@@ -200,10 +196,9 @@ public class JettraServer {
                                 .path("jettrahello").build())
                         .header("Content-Type", "application/json")
                         .GET().build();
-                System.out.println("paso 6");
+
                 HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
                 var body = response.body();
-                System.out.println("paso 7");
                 System.out.printf("\tInstance: %s  \n\t[Native handle: %s].%n \n\tTest connection to: %s", instance, instance.unwrap(Object.class), uriBuilder);
                 //System.out.printf("\tInstance: %s \n\trunning at: %s \n\t[Native handle: %s].%n", instance, uriBuilder,instance.unwrap(Object.class));
 
@@ -212,8 +207,6 @@ public class JettraServer {
                 } else {
                     System.out.println("\n\tResult: " + body);
                 }
-                System.out.println("paso 8");
-                System.out.println("");
             } catch (Exception e) {
                 System.out.println("start() " + e.getLocalizedMessage());
             }
