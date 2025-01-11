@@ -6,8 +6,6 @@ package com.jettraserver;
 
 import com.jettraserver.utils.JettraLogo;
 import com.jettraserver.utils.JettraMessage;
-import jakarta.enterprise.inject.se.SeContainer;
-import jakarta.enterprise.inject.se.SeContainerInitializer;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -20,6 +18,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import javax.net.ssl.SSLContext;
+
 
 /**
  *
@@ -187,6 +186,14 @@ public class JettraServer {
 //    container.select(RandomNumberService.class).get().print();
 //    container.close();
                 
+
+//ConfigProviderResolver resolver = ConfigProviderResolver.instance();
+//Config config = resolver.getBuilder() 
+//        .withSources(MpConfigSources.environmentVariables()) 
+//        .withSources(MpConfigSources.create(Map.of("key", "value"))) 
+//        .build();
+//resolver.registerConfig(config, null);
+
                 long finish = System.currentTimeMillis();
                 long timeElapsed = finish - start;
                 if (logo) {
