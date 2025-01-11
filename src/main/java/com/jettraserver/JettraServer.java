@@ -6,6 +6,8 @@ package com.jettraserver;
 
 import com.jettraserver.utils.JettraLogo;
 import com.jettraserver.utils.JettraMessage;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -181,6 +183,13 @@ public class JettraServer {
                         -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
                                 stopResult.unwrap(Object.class)));
 
+                
+                    SeContainer container = SeContainerInitializer
+                    .newInstance()
+                    .initialize();
+//    container.select(RandomNumberService.class).get().print();
+//    container.close();
+                
                 long finish = System.currentTimeMillis();
                 long timeElapsed = finish - start;
                 if (logo) {
