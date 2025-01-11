@@ -184,9 +184,6 @@ public class JettraServer {
                                 stopResult.unwrap(Object.class)));
 
                 
-                    SeContainer container = SeContainerInitializer
-                    .newInstance()
-                    .initialize();
 //    container.select(RandomNumberService.class).get().print();
 //    container.close();
                 
