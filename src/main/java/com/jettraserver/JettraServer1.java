@@ -25,16 +25,15 @@ import javax.net.ssl.SSLContext;
  *
  * @author avbravo Se utiliza para gestionar los datos leidos del repositorio
  */
-public class JettraServer {
-
-    /**
+public class JettraServer1 {
+  /**
      * Runs this example.
      *
-     * @param args configuration to be used in exact this order:
-     * {@code PROTOCOL HOST PORT ROOT_PATH CLIENT_AUTH} where the protocol can
-     * be either { HTTP} or {HTTPS} and the client authentication is one of
+     * @param args configuration to be used in exact this order: {@code PROTOCOL HOST PORT ROOT_PATH CLIENT_AUTH} where the
+     * protocol can be either { HTTP} or {HTTPS} and the client authentication is one of
      */
-    private Protocol protocol = Protocol.HTTP;
+
+    private String protocol;
     @NotNull(message = "EL rootPath no debe estar vacio")
     private String rootPath;
     //.tls("TLSv1.2")
@@ -47,10 +46,10 @@ public class JettraServer {
 
     private jakarta.ws.rs.core.Application application;
 
-    public JettraServer() {
+    public JettraServer1() {
     }
 
-    public JettraServer(Protocol protocol, String rootPath, String tls, String host, Integer port, Boolean logo, SSLClientAuthentication sslClientAuthentication, Application application) {
+    public JettraServer1(String protocol, String rootPath, String tls, String host, Integer port, Boolean logo, SSLClientAuthentication sslClientAuthentication, Application application) {
         this.protocol = protocol;
         this.rootPath = rootPath;
         this.tls = tls;
@@ -61,6 +60,9 @@ public class JettraServer {
         this.application = application;
     }
 
+    
+    
+    
     public String getTls() {
         return tls;
     }
@@ -68,6 +70,10 @@ public class JettraServer {
     public void setTls(String tls) {
         this.tls = tls;
     }
+
+   
+
+
 
     public jakarta.ws.rs.core.Application getApplication() {
         return application;
@@ -77,11 +83,11 @@ public class JettraServer {
         this.application = application;
     }
 
-    public Protocol getProtocol() {
+    public String getProtocol() {
         return protocol;
     }
 
-    public void setProtocol(Protocol protocol) {
+    public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
 
@@ -111,7 +117,7 @@ public class JettraServer {
 
     public static class Builder {
 
-        private Protocol protocol;
+        private String protocol;
         private String rootPath;
         private String tls;
         private String host;
@@ -125,10 +131,11 @@ public class JettraServer {
             return this;
         }
 
-        public Builder protocol(Protocol protocol) {
+        public Builder protocol(String protocol) {
             this.protocol = protocol;
             return this;
         }
+      
 
         public Builder logo(Boolean logo) {
             this.logo = logo;
@@ -140,7 +147,7 @@ public class JettraServer {
             return this;
         }
 
-        public Builder tls(String tls) {
+       public Builder tls(String tls) {
             this.tls = tls;
             return this;
         }
@@ -160,27 +167,22 @@ public class JettraServer {
             return this;
         }
 
-        public JettraServer start() {
+        public JettraServer1 start() {
             try {
                 System.out.println("....... running......");
                 if (rootPath == null) {
                     System.out.println("please enter rootPath");
-                    return new JettraServer();
+                    return new JettraServer1();
                 }
-                var protocolString = "";
-                if (protocol == Protocol.HTTP) {
-                    protocolString = "HTTP";
-                } else {
-                    protocolString = "HTTPS";
-                }
-                protocolString = protocolString.toUpperCase();
+                protocol = protocol.toUpperCase();
                 if (tls == null) {
                     tls = "";
                 }
                 if (protocol.equals("HTTP") && (!tls.equals(""))) {
                     System.out.println("tls is only used with HTTPS. ");
-                    return new JettraServer();
+                    return new JettraServer1();
                 }
+        
 
                 long start = System.currentTimeMillis();
 
@@ -192,15 +194,15 @@ public class JettraServer {
                         "                         JettraServer starting....");
 
                 SeBootstrap.Configuration.Builder configBuilder = SeBootstrap.Configuration.builder();
-                if (protocolString.equals("HTTP")) {
-                    configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocolString);
+                if (protocol.equals("HTTP")) {
+                    configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol);
                 } else {
-
+                    
                     if (tls == "" || tls == null || tls.isEmpty()) {
-                        configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocolString).sslClientAuthentication(SSLClientAuthentication.MANDATORY);
+                        configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol).sslClientAuthentication(SSLClientAuthentication.MANDATORY);
                     } else {
                         SSLContext tlsContext = SSLContext.getInstance(tls);
-                        configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocolString).sslClientAuthentication(SSLClientAuthentication.MANDATORY).sslContext(tlsContext);
+                        configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocol).sslClientAuthentication(SSLClientAuthentication.MANDATORY).sslContext(tlsContext);
                     }
                 }
 
@@ -260,29 +262,23 @@ public class JettraServer {
                 System.out.println("start() " + e.getLocalizedMessage());
             }
 
-            return new JettraServer(protocol, rootPath, tls, host, port, logo, sslClientAuthentication, application);
+            return new JettraServer1(protocol, rootPath, tls, host, port, logo, sslClientAuthentication, application);
         }
 
-        public JettraServer startNew() {
+        public JettraServer1 startNew() {
             try {
                 System.out.println("....... running startNew......");
                 if (rootPath == null) {
                     System.out.println("please enter rootPath");
-                    return new JettraServer();
+                    return new JettraServer1();
                 }
-                var protocolString = "";
-                if (protocol == Protocol.HTTP) {
-                    protocolString = "HTTP";
-                } else {
-                    protocolString = "HTTPS";
-                }
-                protocolString = protocolString.toUpperCase();
+                protocol = protocol.toUpperCase();
                 if (tls == null) {
                     tls = "";
                 }
-                if (protocolString.equals("HTTP") && (!tls.equals(""))) {
+                if (protocol.equals("HTTP") && (!tls.equals(""))) {
                     System.out.println("tls is only used with HTTPS. ");
-                    return new JettraServer();
+                    return new JettraServer1();
                 }
 
                 long start = System.currentTimeMillis();
@@ -293,45 +289,83 @@ public class JettraServer {
                         "___________________________________________________________________________");
                 System.out.println(
                         "                         JettraServer starting....");
-                if (tls.equals("")) {
-                    final SeBootstrap.Configuration requestedConfiguration = SeBootstrap.Configuration.builder().protocol(protocolString).host(host)
-                            .port(port).rootPath(rootPath).sslClientAuthentication(sslClientAuthentication).build();
-                    SeBootstrap.start(application, requestedConfiguration).thenAccept(instance -> {
-                        instance.stopOnShutdown(stopResult
-                                -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
-                                        stopResult.unwrap(Object.class)));
-                        final URI uri = instance.configuration().baseUri();
-                        System.out.printf("Instance %s running at %s [Native handle: %s].%n", instance, uri,
-                                instance.unwrap(Object.class));
-                        System.out.println("Send SIGKILL to shutdown.");
-                    });
 
-                    Thread.currentThread().join();
-                } else {
-                    SSLContext tlsContext = SSLContext.getInstance(tls);
-                    final SeBootstrap.Configuration requestedConfiguration = SeBootstrap.Configuration.builder().protocol(protocolString).host(host)
-                            .port(port).rootPath(rootPath).sslClientAuthentication(sslClientAuthentication).sslContext(tlsContext).build();
-                    SeBootstrap.start(application, requestedConfiguration).thenAccept(instance -> {
-                        instance.stopOnShutdown(stopResult
-                                -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
-                                        stopResult.unwrap(Object.class)));
-                        final URI uri = instance.configuration().baseUri();
-                        System.out.printf("Instance %s running at %s [Native handle: %s].%n", instance, uri,
-                                instance.unwrap(Object.class));
-                        System.out.println("Send SIGKILL to shutdown.");
-                    });
+                final SeBootstrap.Configuration requestedConfiguration = SeBootstrap.Configuration.builder().protocol(protocol).host(host)
+                        .port(port).rootPath(rootPath).sslClientAuthentication(sslClientAuthentication).build();
 
-                    Thread.currentThread().join();
-                    System.out.println("paso el join");
-                }
+                SeBootstrap.start(application, requestedConfiguration).thenAccept(instance -> {
+                    instance.stopOnShutdown(stopResult
+                            -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
+                                    stopResult.unwrap(Object.class)));
+                    final URI uri = instance.configuration().baseUri();
+                    System.out.printf("Instance %s running at %s [Native handle: %s].%n", instance, uri,
+                            instance.unwrap(Object.class));
+                    System.out.println("Send SIGKILL to shutdown.");
+                });
 
+                Thread.currentThread().join();
+
+                       
             } catch (Exception e) {
                 System.out.println("startNew() " + e.getLocalizedMessage());
             }
 
-            return new JettraServer(protocol, rootPath, tls, host, port, logo, sslClientAuthentication, application);
+            return new JettraServer1(protocol, rootPath, tls, host, port, logo, sslClientAuthentication, application);
         }
 
+        public JettraServer1 jaxRun() {
+            try {
+                System.out.println("____________________________________________________________________");
+                System.out.println("......... llego a JaxRun");
+
+                System.out.println("____________________________________________________________________");
+                if (rootPath == null) {
+                    System.out.println("please enter rootPath");
+                    return new JettraServer1();
+                }
+                protocol = protocol.toUpperCase();
+                if (tls == null) {
+                    tls = "";
+                }
+                if (protocol.equals("HTTP") && (!tls.equals(""))) {
+                    System.out.println("tls is only used with HTTPS. ");
+                    return new JettraServer1();
+                }
+
+                long start = System.currentTimeMillis();
+
+                System.out.println("");
+
+                System.out.println(
+                        "___________________________________________________________________________");
+                System.out.println(
+                        "                         JettraServer starting....");
+
+                //    System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
+                SeBootstrap.Configuration configuration = SeBootstrap.Configuration.builder()
+                        .host(host)
+                        .port(port)
+                        .protocol(protocol.toLowerCase())
+                        .rootPath(rootPath)
+                        .build();
+
+                SeBootstrap.start(application, configuration)
+                        .thenAccept(instance -> {
+                            instance.stopOnShutdown(stopResult -> System.out.printf("Stopped container (%s)", stopResult.unwrap(Object.class)));
+                            log("REST Server running at %s",
+                                    instance.configuration().baseUri());
+                            log("Example: %s",
+                                    instance.configuration().baseUriBuilder().path("rest/frank").build());
+                            log("Send SIGKILL to shutdown container");
+                        });
+                Thread.currentThread().join();
+
+            } catch (Exception e) {
+                System.out.println("start() " + e.getLocalizedMessage());
+            }
+
+            return new JettraServer1(protocol, rootPath, tls, host, port, logo, sslClientAuthentication, application);
+        }
     }
 
     public static Validator getValidator() {
