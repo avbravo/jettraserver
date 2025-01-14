@@ -202,7 +202,6 @@ public class JettraServer {
 
         public JettraServer start() {
             try {
-                System.out.println("....... running startNew......");
                 if (rootPath == null) {
                     System.out.println("please enter rootPath");
                     return new JettraServer();
