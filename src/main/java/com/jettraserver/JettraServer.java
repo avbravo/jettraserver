@@ -15,10 +15,13 @@ import jakarta.ws.rs.SeBootstrap;
 import jakarta.ws.rs.SeBootstrap.Configuration.SSLClientAuthentication;
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.UriBuilder;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
 
 /**
@@ -42,6 +45,9 @@ public class JettraServer {
     private String host;
     private Integer port;
     private Boolean logo;
+    //Ejecuta el test interno del servidor
+    @NotNull
+    private Boolean runInternalTest = Boolean.FALSE;
     //{NONE, OPTIONAL, MANDATORY}.
     private SSLClientAuthentication sslClientAuthentication;
 
@@ -50,8 +56,7 @@ public class JettraServer {
     public JettraServer() {
     }
 
-    public JettraServer(Protocol protocol, String rootPath, String tls, String host, Integer port, Boolean logo, SSLClientAuthentication sslClientAuthentication, Application application) {
-        this.protocol = protocol;
+    public JettraServer(String rootPath, String tls, String host, Integer port, Boolean logo, SSLClientAuthentication sslClientAuthentication, Application application, Boolean runInternalTest) {
         this.rootPath = rootPath;
         this.tls = tls;
         this.host = host;
@@ -59,7 +64,35 @@ public class JettraServer {
         this.logo = logo;
         this.sslClientAuthentication = sslClientAuthentication;
         this.application = application;
+        this.runInternalTest = runInternalTest;
     }
+
+    public String getRootPath() {
+        return rootPath;
+    }
+
+    public void setRootPath(String rootPath) {
+        this.rootPath = rootPath;
+    }
+
+    public Boolean getLogo() {
+        return logo;
+    }
+
+    public void setLogo(Boolean logo) {
+        this.logo = logo;
+    }
+
+    public Boolean getRunInternalTest() {
+        return runInternalTest;
+    }
+
+    public void setRunInternalTest(Boolean runInternalTest) {
+        this.runInternalTest = runInternalTest;
+    }
+
+    
+   
 
     public String getTls() {
         return tls;
@@ -119,7 +152,8 @@ public class JettraServer {
         private Boolean logo;
         private jakarta.ws.rs.core.Application application;
         private SSLClientAuthentication sslClientAuthentication;
-
+    @NotNull
+    private Boolean runInternalTest = Boolean.FALSE;
         public Builder sslClientAuthentication(SSLClientAuthentication sslClientAuthentication) {
             this.sslClientAuthentication = sslClientAuthentication;
             return this;
@@ -132,6 +166,10 @@ public class JettraServer {
 
         public Builder logo(Boolean logo) {
             this.logo = logo;
+            return this;
+        }
+        public Builder runInternalTest(Boolean runInternalTest) {
+            this.runInternalTest = runInternalTest;
             return this;
         }
 
@@ -160,126 +198,20 @@ public class JettraServer {
             return this;
         }
 
+
+
         public JettraServer start() {
-            try {
-                System.out.println("....... running......");
-                if (rootPath == null) {
-                    System.out.println("please enter rootPath");
-                    return new JettraServer();
-                }
-                var protocolString = "";
-                if (protocol == Protocol.HTTP) {
-                    protocolString = "HTTP";
-                } else {
-                    protocolString = "HTTPS";
-                }
-                protocolString = protocolString.toUpperCase();
-                if (tls == null) {
-                    tls = "";
-                }
-                if (protocol.equals("HTTP") && (!tls.equals(""))) {
-                    System.out.println("tls is only used with HTTPS. ");
-                    return new JettraServer();
-                }
-
-                long start = System.currentTimeMillis();
-
-                System.out.println("");
-
-                System.out.println(
-                        "___________________________________________________________________________");
-                System.out.println(
-                        "                         JettraServer starting....");
-
-                SeBootstrap.Configuration.Builder configBuilder = SeBootstrap.Configuration.builder();
-                if (protocolString.equals("HTTP")) {
-                    configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocolString);
-                } else {
-
-                    if (tls == "" || tls == null || tls.isEmpty()) {
-                        configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocolString).sslClientAuthentication(SSLClientAuthentication.MANDATORY);
-                    } else {
-                        SSLContext tlsContext = SSLContext.getInstance(tls);
-                        configBuilder.property(SeBootstrap.Configuration.PROTOCOL, protocolString).sslClientAuthentication(SSLClientAuthentication.MANDATORY).sslContext(tlsContext);
-                    }
-                }
-
-                if (!rootPath.equals("")) {
-                    configBuilder.property(SeBootstrap.Configuration.ROOT_PATH, rootPath);
-                }
-                configBuilder.property(SeBootstrap.Configuration.HOST, host);
-                configBuilder.property(SeBootstrap.Configuration.PORT, port);
-
-                System.out.println("..........................................................");
-                System.out.println("application " + application.toString());
-                System.out.println("host " + host);
-                System.out.println("port " + port);
-                System.out.println("rootPath " + rootPath);
-                System.out.println("..........................................................");
-                SeBootstrap.Instance instance = SeBootstrap.start(application, configBuilder.build()).toCompletableFuture().get();
-
-                instance.stopOnShutdown(stopResult
-                        -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
-                                stopResult.unwrap(Object.class)));
-
-//    container.select(RandomNumberService.class).get().print();
-//    container.close();
-//ConfigProviderResolver resolver = ConfigProviderResolver.instance();
-//Config config = resolver.getBuilder() 
-//        .withSources(MpConfigSources.environmentVariables()) 
-//        .withSources(MpConfigSources.create(Map.of("key", "value"))) 
-//        .build();
-//resolver.registerConfig(config, null);
-                long finish = System.currentTimeMillis();
-                long timeElapsed = finish - start;
-                if (logo) {
-                    JettraLogo.blurVision();
-                }
-
-                System.out.println("Server started in: " + timeElapsed + "ms");
-                System.out.println("\n\n");
-                UriBuilder uriBuilder = instance.configuration().baseUriBuilder();
-                var httpClient = HttpClient.newBuilder().build();
-                var httpRequest = HttpRequest.newBuilder()
-                        .uri(uriBuilder
-                                .path("jettrahello").build())
-                        .header("Content-Type", "application/json")
-                        .GET().build();
-
-                HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-                var body = response.body();
-                System.out.printf("\tInstance: %s  \n\t[Native handle: %s].%n \n\tTest connection to: %s", instance, instance.unwrap(Object.class), uriBuilder);
-                //System.out.printf("\tInstance: %s \n\trunning at: %s \n\t[Native handle: %s].%n", instance, uriBuilder,instance.unwrap(Object.class));
-
-                if (body == null || body.equals("")) {
-                    JettraMessage.failedTest();
-                } else {
-                    System.out.println("\n\tResult: " + body);
-                }
-            } catch (Exception e) {
-                System.out.println("start() " + e.getLocalizedMessage());
-            }
-
-            return new JettraServer(protocol, rootPath, tls, host, port, logo, sslClientAuthentication, application);
-        }
-
-        public JettraServer startNew() {
             try {
                 System.out.println("....... running startNew......");
                 if (rootPath == null) {
                     System.out.println("please enter rootPath");
                     return new JettraServer();
                 }
-                var protocolString = "";
-                if (protocol == Protocol.HTTP) {
-                    protocolString = "HTTP";
-                } else {
-                    protocolString = "HTTPS";
-                }
+                var protocolString = protocol == Protocol.HTTP ? "HTTP" : "HTTPS";
+
                 protocolString = protocolString.toUpperCase();
-                if (tls == null) {
-                    tls = "";
-                }
+                tls = tls == null ? "" : tls;
+
                 if (protocolString.equals("HTTP") && (!tls.equals(""))) {
                     System.out.println("tls is only used with HTTPS. ");
                     return new JettraServer();
@@ -287,49 +219,83 @@ public class JettraServer {
 
                 long start = System.currentTimeMillis();
 
-                System.out.println("");
-
-                System.out.println(
-                        "___________________________________________________________________________");
+                System.out.println("\n___________________________________________________________________________");
                 System.out.println(
                         "                         JettraServer starting....");
-                if (tls.equals("")) {
-                    final SeBootstrap.Configuration requestedConfiguration = SeBootstrap.Configuration.builder().protocol(protocolString).host(host)
-                            .port(port).rootPath(rootPath).sslClientAuthentication(sslClientAuthentication).build();
-                    SeBootstrap.start(application, requestedConfiguration).thenAccept(instance -> {
-                        instance.stopOnShutdown(stopResult
-                                -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
-                                        stopResult.unwrap(Object.class)));
-                        final URI uri = instance.configuration().baseUri();
-                        System.out.printf("Instance %s running at %s [Native handle: %s].%n", instance, uri,
-                                instance.unwrap(Object.class));
-                        System.out.println("Send SIGKILL to shutdown.");
-                    });
+                final SeBootstrap.Configuration requestedConfiguration;
 
-                    Thread.currentThread().join();
+                if (tls.equals("")) {
+                    requestedConfiguration = SeBootstrap.Configuration.builder().protocol(protocolString).host(host)
+                            .port(port).rootPath(rootPath).sslClientAuthentication(sslClientAuthentication).build();
                 } else {
                     SSLContext tlsContext = SSLContext.getInstance(tls);
-                    final SeBootstrap.Configuration requestedConfiguration = SeBootstrap.Configuration.builder().protocol(protocolString).host(host)
+                    requestedConfiguration = SeBootstrap.Configuration.builder().protocol(protocolString).host(host)
                             .port(port).rootPath(rootPath).sslClientAuthentication(sslClientAuthentication).sslContext(tlsContext).build();
-                    SeBootstrap.start(application, requestedConfiguration).thenAccept(instance -> {
+
+                }
+
+                SeBootstrap.start(application, requestedConfiguration).thenAccept(instance -> {
+                    try {
                         instance.stopOnShutdown(stopResult
                                 -> System.out.printf("Stop result: %s [Native stop result: %s].%n", stopResult,
                                         stopResult.unwrap(Object.class)));
-                        final URI uri = instance.configuration().baseUri();
-                        System.out.printf("Instance %s running at %s [Native handle: %s].%n", instance, uri,
-                                instance.unwrap(Object.class));
-                        System.out.println("Send SIGKILL to shutdown.");
-                    });
 
-                    Thread.currentThread().join();
-                    System.out.println("paso el join");
-                }
+                        long finish = System.currentTimeMillis();
+                        long timeElapsed = finish - start;
+                        System.out.println("\n");
+                        if (logo) {
+                            JettraLogo.blurVision();
+                        }
+
+                        System.out.println("\tServer started in: " + timeElapsed + "ms\n");
+                        Boolean test = true;
+                        UriBuilder uriBuilder = instance.configuration().baseUriBuilder();
+                        var template = uriBuilder.toTemplate();
+                        System.out.println("[URI]: "+template);
+                      if (runInternalTest) {
+
+                            var httpClient = HttpClient.newBuilder().build();
+                            var httpRequest = HttpRequest.newBuilder()
+                                    .uri(uriBuilder
+                                            .path("jettrahello").build())
+                                    .header("Content-Type", "application/json")
+                                    .GET().build();
+
+                            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+                            var body = response.body();
+                            System.out.printf("[Instance: %s]  \n[Native handle: %s].\n[Test endpoint: %s]", instance, instance.unwrap(Object.class), uriBuilder);
+
+                            if (body == null || body.equals("")) {
+                                JettraMessage.failedTest();
+                            } else {
+                                System.out.println("\n[Result]: " + body);
+                            }
+                             finish = System.currentTimeMillis();
+                        timeElapsed = finish - start;
+                        System.out.println("\n\n");
+
+                        System.out.println("\tServer started in WITH TEST: " + timeElapsed + "ms");
+                      }
+
+                       
+
+                        System.out.println("..............................");
+                        System.out.println("\tSend SIGKILL to shutdown.");
+                        System.out.println("..............................");
+                    } catch (IOException ex) {
+                        Logger.getLogger(JettraServer.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(JettraServer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                });
+
+                Thread.currentThread().join();
 
             } catch (Exception e) {
                 System.out.println("startNew() " + e.getLocalizedMessage());
             }
 
-            return new JettraServer(protocol, rootPath, tls, host, port, logo, sslClientAuthentication, application);
+            return new JettraServer(rootPath, tls, host, port, logo, sslClientAuthentication, application, runInternalTest);
         }
 
     }

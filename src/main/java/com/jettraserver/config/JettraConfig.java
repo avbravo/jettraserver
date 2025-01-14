@@ -36,13 +36,8 @@ public interface JettraConfig {
                 System.out.println("Sorry, unable to find config.properties");
                 return result;
             }
-
             prop.load(input);
-
-            //get the property value and print it out
             result = prop.getProperty(propertie);
-            System.out.println(".... result " + result);
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
