@@ -1,5 +1,6 @@
 # Jettra Server
 
+# Example text {style=text-align:center}
 
 1. Importe la libreria a su proyecto Java SE
 2. Crea el archivo src/main/resources/META-INF/beans.xml
