@@ -291,7 +291,7 @@ public class JettraServer {
                 Thread.currentThread().join();
 
             } catch (Exception e) {
-                System.out.println("startNew() " + e.getLocalizedMessage());
+                System.out.println("start() " + e.getLocalizedMessage());
             }
 
             return new JettraServer(rootPath, tls, host, port, logo, sslClientAuthentication, application, runInternalTest);
